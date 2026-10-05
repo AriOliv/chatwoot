@@ -1,5 +1,17 @@
 class Integrations::Slack::SendOnSlackService < Base::SendOnChannelService
   include RegexHelper
+
+  # Compared as a string so CE installs, which never load the enterprise constant, still work.
+  CAPTAIN_SENDER_TYPE = 'Captain::Assistant'.freeze
+  # amber-9 and slate-9 from the dashboard palette, so private notes read the same in both places.
+  PRIVATE_NOTE_COLOR = '#FFC53D'.freeze
+  ACTIVITY_COLOR = '#8B8D98'.freeze
+  # File names under public/integrations/slack. Slack caches an avatar by its URL, so a redrawn
+  # icon needs a new name to show up.
+  AVATAR_ASSETS = {
+    'Contact' => 'contact_avatar', 'Agent' => 'agent_avatar', 'System' => 'system_avatar', 'Bot' => 'bot_avatar', 'Captain' => 'captain'
+  }.freeze
+
   pattr_initialize [:message!, :hook!]
 
   def perform
@@ -89,14 +101,8 @@ class Integrations::Slack::SendOnSlackService < Base::SendOnChannelService
   end
 
   def avatar_url(sender)
-    sender_type = sender_type(sender).downcase
     blob_key = sender&.avatar&.attached? ? sender.avatar.blob.key : nil
-    generate_url(sender_type, blob_key)
-  end
-
-  def generate_url(sender_type, blob_key)
-    base_url = ENV.fetch('FRONTEND_URL', nil)
-    "#{base_url}/slack_uploads?blob_key=#{blob_key}&sender_type=#{sender_type}"
+    "#{ENV.fetch('FRONTEND_URL', nil)}/slack_uploads?blob_key=#{blob_key}&sender_type=#{AVATAR_ASSETS.fetch(sender_type(sender))}"
   end
 
   def send_message
@@ -113,12 +119,27 @@ class Integrations::Slack::SendOnSlackService < Base::SendOnChannelService
   def post_message
     @slack_message = slack_client.chat_postMessage(
       channel: hook.reference_id,
-      text: message_content,
       username: sender_name(message.sender),
       thread_ts: conversation.identifier,
       icon_url: avatar_url(message.sender),
-      unfurl_links: conversation.identifier.present?
+      unfurl_links: conversation.identifier.present?,
+      **message_body
     )
+  end
+
+  # Slack only draws a border on attachments, so private notes and activity messages go inside one.
+  # Top level text is left out for them because Slack would show it above the attachment as well.
+  def message_body
+    return { text: message_content } if border_color.blank?
+
+    { attachments: [{ color: border_color, text: message_content, fallback: message_content, mrkdwn_in: ['text'] }] }
+  end
+
+  # An activity message that starts the thread stays plain, like every other thread opener.
+  def border_color
+    return PRIVATE_NOTE_COLOR if message.private?
+
+    ACTIVITY_COLOR if message.activity? && conversation.identifier.present?
   end
 
   def upload_files
@@ -176,8 +197,10 @@ class Integrations::Slack::SendOnSlackService < Base::SendOnChannelService
   def sender_type(sender)
     if sender.instance_of?(Contact)
       'Contact'
-    elsif sender.instance_of?(User)
+    elsif sender.is_a?(User)
       'Agent'
+    elsif message.sender_type == CAPTAIN_SENDER_TYPE
+      'Captain'
     elsif message.message_type == 'activity' && sender.nil?
       'System'
     else

@@ -294,18 +294,19 @@ describe Integrations::Slack::SendOnSlackService do
         expect(template_message.external_source_id_slack).to eq 'cw-origin-6789.12345'
       end
 
-      it 'sent a activity message on slack' do
+      it 'sent a activity message on slack inside a gray bordered attachment' do
         template_message.update!(message_type: :activity)
         template_message.update!(sender: nil)
         builder = described_class.new(message: template_message, hook: hook)
         allow(builder).to receive(:slack_client).and_return(slack_client)
+        content = "_#{template_message.content}_"
         expect(slack_client).to receive(:chat_postMessage).with(
           channel: hook.reference_id,
-          text: "_#{template_message.content}_",
           username: 'System',
           thread_ts: conversation.identifier,
-          icon_url: anything,
-          unfurl_links: true
+          icon_url: a_string_ending_with('sender_type=system_avatar'),
+          unfurl_links: true,
+          attachments: [{ color: '#8B8D98', text: content, fallback: content, mrkdwn_in: ['text'] }]
         ).and_return(slack_message)
 
         builder.perform
@@ -357,6 +358,123 @@ describe Integrations::Slack::SendOnSlackService do
         expect(Rails.logger).to receive(:warn).with('Slack: Missing scope error: Missing required scope')
 
         link_builder.link_unfurl(unflur_payload)
+      end
+    end
+
+    context 'when an activity message starts the thread' do
+      let(:message) do
+        create(:message, account: account, inbox: conversation.inbox, conversation: conversation, message_type: :activity,
+                         content: 'Conversation was created')
+      end
+
+      it 'sends it as plain text without a border' do
+        expect(slack_client).to receive(:chat_postMessage).with(
+          hash_including(text: a_string_ending_with('_Conversation was created_'), thread_ts: nil)
+        ).and_return(slack_message)
+
+        builder.perform
+      end
+    end
+
+    context 'when the message is sent by a contact' do
+      before { conversation.update!(identifier: 'random_slack_thread_ts') }
+
+      it 'uses the contact avatar' do
+        expect(slack_client).to receive(:chat_postMessage).with(
+          hash_including(username: "#{message.sender.name} (Contact)", icon_url: a_string_ending_with('sender_type=contact_avatar'))
+        ).and_return(slack_message)
+
+        builder.perform
+      end
+    end
+
+    context 'when the message is sent by an agent' do
+      let(:message) do
+        create(:message, account: account, inbox: conversation.inbox, conversation: conversation, message_type: :outgoing,
+                         sender: create(:user, account: account))
+      end
+
+      before { conversation.update!(identifier: 'random_slack_thread_ts') }
+
+      it 'labels the sender as an agent and uses the agent avatar' do
+        expect(slack_client).to receive(:chat_postMessage).with(
+          hash_including(username: "#{message.sender.name} (Agent)", icon_url: a_string_ending_with('sender_type=agent_avatar'))
+        ).and_return(slack_message)
+
+        builder.perform
+      end
+    end
+
+    context 'when the message is sent by an agent who is also a super admin' do
+      let(:message) do
+        create(:message, account: account, inbox: conversation.inbox, conversation: conversation, message_type: :outgoing,
+                         sender: create(:super_admin))
+      end
+
+      before { conversation.update!(identifier: 'random_slack_thread_ts') }
+
+      it 'labels the sender as an agent' do
+        expect(slack_client).to receive(:chat_postMessage).with(
+          hash_including(username: "#{message.sender.name} (Agent)", icon_url: a_string_ending_with('sender_type=agent_avatar'))
+        ).and_return(slack_message)
+
+        builder.perform
+      end
+    end
+
+    context 'when the message is a private note' do
+      let(:message) do
+        create(:message, account: account, inbox: conversation.inbox, conversation: conversation, message_type: :outgoing,
+                         private: true, content: 'Check the billing page')
+      end
+
+      before { conversation.update!(identifier: 'random_slack_thread_ts') }
+
+      it 'sends it inside an amber bordered attachment without top level text' do
+        expect(slack_client).to receive(:chat_postMessage).with(
+          channel: hook.reference_id,
+          username: anything,
+          thread_ts: conversation.identifier,
+          icon_url: anything,
+          unfurl_links: true,
+          attachments: [
+            { color: '#FFC53D', text: 'private: Check the billing page', fallback: 'private: Check the billing page', mrkdwn_in: ['text'] }
+          ]
+        ).and_return(slack_message)
+
+        builder.perform
+      end
+    end
+
+    context 'when the message is sent by a bot' do
+      let(:message) do
+        create(:message, account: account, inbox: conversation.inbox, conversation: conversation, message_type: :outgoing,
+                         sender: create(:agent_bot))
+      end
+
+      before { conversation.update!(identifier: 'random_slack_thread_ts') }
+
+      it 'labels the sender as a bot and uses the bot avatar' do
+        expect(slack_client).to receive(:chat_postMessage).with(
+          hash_including(username: "#{message.sender.name} (Bot)", icon_url: a_string_ending_with('sender_type=bot_avatar'))
+        ).and_return(slack_message)
+
+        builder.perform
+      end
+
+      context 'when the bot is Captain' do
+        let(:message) do
+          create(:message, account: account, inbox: conversation.inbox, conversation: conversation, message_type: :outgoing,
+                           sender: create(:captain_assistant, account: account))
+        end
+
+        it 'labels the sender as Captain and uses the Captain avatar' do
+          expect(slack_client).to receive(:chat_postMessage).with(
+            hash_including(username: "#{message.sender.name} (Captain)", icon_url: a_string_ending_with('sender_type=captain'))
+          ).and_return(slack_message)
+
+          builder.perform
+        end
       end
     end
 
