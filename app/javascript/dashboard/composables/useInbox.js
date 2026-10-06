@@ -22,6 +22,7 @@ export const INBOX_FEATURE_MAP = {
     INBOX_TYPES.WHATSAPP,
     INBOX_TYPES.TELEGRAM,
     INBOX_TYPES.TIKTOK,
+    INBOX_TYPES.SLACK,
     INBOX_TYPES.API,
   ],
   [INBOX_FEATURES.REPLY_TO_OUTGOING]: [
@@ -123,6 +124,17 @@ export const useInbox = (inboxId = null) => {
     );
   });
 
+  const isASlackChannel = computed(() => {
+    return channelType.value === INBOX_TYPES.SLACK;
+  });
+
+  const isAWhatsmeowChannel = computed(() => {
+    return (
+      channelType.value === INBOX_TYPES.WHATSAPP &&
+      whatsAppAPIProvider.value === 'whatsmeow'
+    );
+  });
+
   const isAWhatsAppChannel = computed(() => {
     return (
       channelType.value === INBOX_TYPES.WHATSAPP ||
@@ -158,6 +170,8 @@ export const useInbox = (inboxId = null) => {
     isATwilioWhatsAppChannel,
     isAWhatsAppCloudChannel,
     is360DialogWhatsAppChannel,
+    isAWhatsmeowChannel,
+    isASlackChannel,
     isAnEmailChannel,
     isAnInstagramChannel,
     isATiktokChannel,

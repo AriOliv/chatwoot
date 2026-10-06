@@ -176,6 +176,9 @@ export default {
       if (this.isAWhatsAppCloudChannel) {
         return this.$t('INBOX_MGMT.ADD.WHATSAPP.PROVIDERS.WHATSAPP_CLOUD');
       }
+      if (this.isAWhatsmeowChannel) {
+        return this.$t('INBOX_MGMT.ADD.WHATSAPP.PROVIDERS.WHATSMEOW');
+      }
       if (this.is360DialogWhatsAppChannel) {
         return this.$t('INBOX_MGMT.ADD.WHATSAPP.PROVIDERS.360_DIALOG');
       }
@@ -224,6 +227,8 @@ export default {
         this.isAPIInbox ||
         (this.isAnEmailChannel && !this.inbox.provider) ||
         this.shouldShowWhatsAppConfiguration ||
+        this.isAWhatsmeowChannel ||
+        this.isASlackChannel ||
         this.isAWebWidgetInbox
       ) {
         visibleToAllChannelTabs = [

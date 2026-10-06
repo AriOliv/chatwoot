@@ -93,6 +93,15 @@ const channelList = computed(() => {
     });
   }
 
+  if (window.chatwootConfig?.slackChannelClientId) {
+    channels.push({
+      key: 'slack',
+      title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.SLACK.TITLE'),
+      description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.SLACK.DESCRIPTION'),
+      icon: 'i-ri-slack-line',
+    });
+  }
+
   channels.push({
     key: 'voice',
     title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.VOICE.TITLE'),

@@ -550,6 +550,40 @@
   type: secret
 # ------- End of TikTok Channel Related Config ------- #
 
+# ------- WhatsApp (whatsmeow bridge) Related Config ------- #
+- name: WHATSMEOW_BRIDGE_URL
+  display_title: 'Whatsmeow Bridge URL'
+  description: 'Base URL of the whatsmeow-bridge service, e.g. http://whatsmeow-bridge:8080. Enables the WhatsApp (QR Code) provider.'
+  value: ''
+  locked: false
+- name: WHATSMEOW_BRIDGE_TOKEN
+  display_title: 'Whatsmeow Bridge Token'
+  description: 'Bearer token shared with the whatsmeow-bridge service'
+  locked: false
+  type: secret
+- name: WHATSMEOW_WEBHOOK_BASE_URL
+  display_title: 'Whatsmeow Webhook Base URL'
+  description: 'URL the bridge uses to reach Chatwoot webhooks (defaults to FRONTEND_URL), e.g. http://rails:3000'
+  value: ''
+  locked: false
+# ------- End of WhatsApp (whatsmeow bridge) Related Config ------- #
+
+# ------- Slack Channel Related Config ------- #
+- name: SLACK_CHANNEL_CLIENT_ID
+  display_title: 'Slack Channel Client ID'
+  description: 'Client ID of the Slack app used for Slack inboxes (separate from the Slack integration app)'
+  locked: false
+- name: SLACK_CHANNEL_CLIENT_SECRET
+  display_title: 'Slack Channel Client Secret'
+  locked: false
+  type: secret
+- name: SLACK_CHANNEL_SIGNING_SECRET
+  display_title: 'Slack Channel Signing Secret'
+  description: 'Signing secret used to verify Slack inbox event and interactivity payloads'
+  locked: false
+  type: secret
+# ------- End of Slack Channel Related Config ------- #
+
 # ------- OG Image Related Config ------- #
 - name: OG_IMAGE_CDN_URL
   display_title: 'OG Image CDN URL'

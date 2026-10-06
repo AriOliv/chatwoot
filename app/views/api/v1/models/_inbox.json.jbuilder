@@ -137,6 +137,13 @@ end
 
 json.provider resource.channel.try(:provider)
 
+## Slack Attributes
+if resource.slack?
+  json.team_name resource.channel.try(:team_name)
+  json.settings resource.channel.try(:settings)
+  json.reauthorization_required resource.channel.try(:reauthorization_required?)
+end
+
 ## Telegram Attributes
 json.bot_name resource.channel.try(:bot_name) if resource.telegram?
 

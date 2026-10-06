@@ -341,6 +341,7 @@ en:
         flow_response: 'Submitted a flow response'
         request_contact_info: 'Would you like to share your phone number with us?'
         unsupported_message: 'This message is unavailable.'
+        reaction_removed: 'Removed a reaction'
       voice_call:
         twilio: 'Voice Call'
         whatsapp: 'WhatsApp Call'

@@ -253,7 +253,9 @@
           "WHATSAPP_CLOUD_DESC": "Quick setup through Meta",
           "WHATSAPP_CLOUD_MANUAL_SETUP_DESC": "Manual setup with Cloud API credentials",
           "TWILIO_DESC": "Connect via Twilio credentials",
-          "360_DIALOG": "360Dialog"
+          "360_DIALOG": "360Dialog",
+          "WHATSMEOW": "WhatsApp (QR Code)",
+          "WHATSMEOW_DESC": "Connect any WhatsApp number by scanning a QR code. Uses WhatsApp Web; no Meta approval or 24h window."
         },
         "SELECT_PROVIDER": {
           "TITLE": "Select your API provider",
@@ -621,6 +623,10 @@
           "VOICE": {
             "TITLE": "Voice",
             "DESCRIPTION": "Integrate with Twilio Voice"
+          },
+          "SLACK": {
+            "TITLE": "Slack",
+            "DESCRIPTION": "Manage Slack DMs and channel threads (including Slack Connect) as conversations."
           }
         }
       },
@@ -655,6 +661,12 @@
         "SIGN_IN": "Sign in with Google",
         "EMAIL_PLACEHOLDER": "Enter email address",
         "ERROR_MESSAGE": "There was an error connecting to Google, please try again"
+      },
+      "SLACK_CHANNEL": {
+        "TITLE": "Connect your Slack workspace",
+        "HELP": "Install the Slack app in your workspace. DMs to the app and threads in the channels you pick become conversations, and agent replies are posted back in Slack.",
+        "CONNECT": "Continue with Slack",
+        "ERROR_MESSAGE": "Could not start the Slack authorization. Check the Slack inbox app configuration."
       }
     },
     "DETAILS": {
@@ -1633,7 +1645,51 @@
       "API": "API Channel",
       "INSTAGRAM": "Instagram",
       "TIKTOK": "TikTok",
-      "VOICE": "Voice"
+      "VOICE": "Voice",
+      "SLACK": "Slack"
+    },
+    "WHATSMEOW": {
+      "CREATE_AND_PAIR": "Create inbox and pair",
+      "CONNECTION_TITLE": "WhatsApp connection",
+      "CONNECTION_HELP": "Pair this inbox with a phone through WhatsApp > Linked devices.",
+      "MODE_QR": "QR code",
+      "MODE_CODE": "Pairing code",
+      "QR_INSTRUCTIONS": "On your phone open WhatsApp > Settings > Linked devices > Link a device and scan this code.",
+      "QR_ALT": "WhatsApp pairing QR code",
+      "GENERATE_QR": "Generate new QR code",
+      "CODE_INSTRUCTIONS": "Enter the phone number to pair, then type the code in WhatsApp > Linked devices > Link with phone number.",
+      "PHONE_LABEL": "Phone number",
+      "GENERATE_CODE": "Get pairing code",
+      "RECONNECT": "Reconnect",
+      "LOGOUT": "Disconnect device",
+      "ERROR": "Could not reach the WhatsApp bridge. Please try again.",
+      "GROUPS_ENABLED": "Receive group messages",
+      "GROUPS_ENABLED_HELP": "Each WhatsApp group becomes a contact; the sender is shown on every message.",
+      "IMPORT_HISTORY": "Import chat history",
+      "IMPORT_HISTORY_HELP": "Import recent conversations from the phone after pairing.",
+      "NATIVE_BUTTONS": "Send native buttons",
+      "NATIVE_BUTTONS_HELP": "Try WhatsApp buttons/lists first and fall back to numbered options. Disable to always send numbered text.",
+      "STATUS": {
+        "connected": "Connected",
+        "disconnected": "Disconnected",
+        "qr_pending": "Waiting for pairing",
+        "logged_out": "Not paired",
+        "unavailable": "Bridge unavailable",
+        "unknown": "Checking…"
+      }
+    },
+    "SLACK_CHANNEL": {
+      "ACCEPT_DMS": "Accept direct messages",
+      "ACCEPT_DMS_HELP": "Direct messages to the Slack app create conversations.",
+      "MENTION_ONLY": "Only start conversations on mention",
+      "MENTION_ONLY_HELP": "In monitored channels, only messages that mention the app open a new conversation; replies in existing threads are always captured.",
+      "MONITORED_CHANNELS": "Monitored channels",
+      "MONITORED_CHANNELS_HELP": "Each new thread in these channels becomes a conversation. Private channels require inviting the app with /invite.",
+      "SEARCH_PLACEHOLDER": "Search channels",
+      "LOADING": "Loading channels…",
+      "LOAD_ERROR": "Could not load Slack channels",
+      "PRIVATE_HINT": "private",
+      "SAVE": "Save"
     }
   }
 }

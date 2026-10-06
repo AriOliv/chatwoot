@@ -40,6 +40,8 @@
         fbAppId: '<%= @global_config['FB_APP_ID'] %>',
         instagramAppId: '<%= @global_config['INSTAGRAM_APP_ID'] %>',
         tiktokAppId: '<%= @global_config['TIKTOK_APP_ID'] %>',
+        whatsmeowEnabled: <%= @global_config['WHATSMEOW_ENABLED'] ? 'true' : 'false' %>,
+        slackChannelClientId: '<%= @global_config['SLACK_CHANNEL_CLIENT_ID'] %>',
         googleOAuthClientId: '<%= ENV.fetch('GOOGLE_OAUTH_CLIENT_ID', nil) %>',
         googleOAuthCallbackUrl: '<%= ENV.fetch('GOOGLE_OAUTH_CALLBACK_URL', nil) %>',
         allowedLoginMethods: <%= @global_config['ALLOWED_LOGIN_METHODS'].to_json.html_safe %>,

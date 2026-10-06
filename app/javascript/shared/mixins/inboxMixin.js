@@ -15,6 +15,7 @@ export const INBOX_FEATURE_MAP = {
     INBOX_TYPES.WHATSAPP,
     INBOX_TYPES.TELEGRAM,
     INBOX_TYPES.TIKTOK,
+    INBOX_TYPES.SLACK,
     INBOX_TYPES.API,
   ],
   [INBOX_FEATURES.REPLY_TO_OUTGOING]: [
@@ -83,6 +84,15 @@ export default {
       return (
         this.channelType === INBOX_TYPES.WHATSAPP &&
         this.whatsAppAPIProvider === 'whatsapp_cloud'
+      );
+    },
+    isASlackChannel() {
+      return this.channelType === INBOX_TYPES.SLACK;
+    },
+    isAWhatsmeowChannel() {
+      return (
+        this.channelType === INBOX_TYPES.WHATSAPP &&
+        this.whatsAppAPIProvider === 'whatsmeow'
       );
     },
     is360DialogWhatsAppChannel() {

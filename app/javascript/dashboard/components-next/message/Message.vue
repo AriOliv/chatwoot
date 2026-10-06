@@ -512,6 +512,12 @@ const avatarInfo = computed(() => {
     return { name: t('CONVERSATION.BOT'), src: '' };
   }
 
+  // Group chats (e.g. WhatsApp via whatsmeow): the contact is the group, show the participant
+  const externalSender = props.contentAttributes?.externalSender;
+  if (externalSender?.name) {
+    return { name: externalSender.name, src: '' };
+  }
+
   const { sender } = props;
   const { name, type, avatarUrl, thumbnail } = sender || {};
 

@@ -13,6 +13,7 @@ export const INBOX_TYPES = {
   SMS: 'Channel::Sms',
   INSTAGRAM: 'Channel::Instagram',
   TIKTOK: 'Channel::Tiktok',
+  SLACK: 'Channel::Slack',
 };
 
 // Short channel-type slugs used to identify a channel without leaning on its
@@ -23,6 +24,7 @@ export const CHANNEL_TYPES = {
   FACEBOOK: 'facebook',
   INSTAGRAM: 'instagram',
   TIKTOK: 'tiktok',
+  SLACK: 'slack',
   TELEGRAM: 'telegram',
   LINE: 'line',
   GMAIL: 'gmail',
@@ -92,6 +94,7 @@ const INBOX_ICON_MAP_FILL = {
   [INBOX_TYPES.LINE]: 'i-ri-line-fill',
   [INBOX_TYPES.INSTAGRAM]: 'i-ri-instagram-fill',
   [INBOX_TYPES.TIKTOK]: 'i-ri-tiktok-fill',
+  [INBOX_TYPES.SLACK]: 'i-ri-slack-fill',
 };
 
 const DEFAULT_ICON_FILL = 'i-ri-chat-1-fill';
@@ -107,6 +110,7 @@ const INBOX_ICON_MAP_LINE = {
   [INBOX_TYPES.LINE]: 'i-woot-line',
   [INBOX_TYPES.INSTAGRAM]: 'i-woot-instagram',
   [INBOX_TYPES.TIKTOK]: 'i-woot-tiktok',
+  [INBOX_TYPES.SLACK]: 'i-ri-slack-line',
 };
 
 const DEFAULT_ICON_LINE = 'i-ri-chat-1-line';
@@ -119,6 +123,7 @@ const INBOX_IDENTIFIER_RESOLVERS = {
   [INBOX_TYPES.WHATSAPP]: inbox => inbox.phone_number,
   [INBOX_TYPES.SMS]: inbox => inbox.phone_number,
   [INBOX_TYPES.LINE]: inbox => inbox.line_channel_id,
+  [INBOX_TYPES.SLACK]: inbox => inbox.team_name,
   [INBOX_TYPES.API]: inbox => inbox.inbox_identifier,
   [INBOX_TYPES.TWILIO]: inbox =>
     inbox.phone_number?.replace(/^whatsapp:/, '') ||
@@ -175,6 +180,9 @@ export const getReadableInboxByType = (type, phoneNumber) => {
     case INBOX_TYPES.LINE:
       return 'line';
 
+    case INBOX_TYPES.SLACK:
+      return 'slack';
+
     default:
       return 'chat';
   }
@@ -216,6 +224,9 @@ export const getInboxClassByType = (type, phoneNumber) => {
 
     case INBOX_TYPES.TIKTOK:
       return 'brand-tiktok';
+
+    case INBOX_TYPES.SLACK:
+      return 'brand-slack';
 
     default:
       return 'chat';

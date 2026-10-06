@@ -54,6 +54,10 @@ const isActive = computed(() => {
     return props.enabledFeatures.channel_tiktok && hasTiktokConfigured.value;
   }
 
+  if (key === 'slack') {
+    return Boolean(window.chatwootConfig?.slackChannelClientId);
+  }
+
   if (key === 'voice' || key === 'whatsapp_call') {
     return props.enabledFeatures.channel_voice;
   }

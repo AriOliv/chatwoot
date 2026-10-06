@@ -254,7 +254,9 @@
           "WHATSAPP_CLOUD_DESC": "Configuração rápida via Meta",
           "WHATSAPP_CLOUD_MANUAL_SETUP_DESC": "Configuração manual com credenciais da Cloud API",
           "TWILIO_DESC": "Conectar através de credenciais Twilio",
-          "360_DIALOG": "360Dialog"
+          "360_DIALOG": "360Dialog",
+          "WHATSMEOW": "WhatsApp (QR Code)",
+          "WHATSMEOW_DESC": "Conecte qualquer número do WhatsApp lendo um QR code. Usa o WhatsApp Web; sem aprovação da Meta nem janela de 24h."
         },
         "SELECT_PROVIDER": {
           "TITLE": "Selecione seu provedor de API",
@@ -618,6 +620,10 @@
           "VOICE": {
             "TITLE": "Voz",
             "DESCRIPTION": "Integre com o Twilio Voice"
+          },
+          "SLACK": {
+            "TITLE": "Slack",
+            "DESCRIPTION": "Gerencie DMs e threads de canais do Slack (inclusive Slack Connect) como conversas."
           }
         }
       },
@@ -652,6 +658,12 @@
         "SIGN_IN": "Entrar com o Google",
         "EMAIL_PLACEHOLDER": "Digite o endereço de e-mail",
         "ERROR_MESSAGE": "Houve um erro ao conectar com o Google, por favor, tente novamente"
+      },
+      "SLACK_CHANNEL": {
+        "TITLE": "Conecte seu workspace do Slack",
+        "HELP": "Instale o app do Slack no seu workspace. DMs para o app e threads nos canais escolhidos viram conversas, e as respostas dos agentes são publicadas de volta no Slack.",
+        "CONNECT": "Continuar com o Slack",
+        "ERROR_MESSAGE": "Não foi possível iniciar a autorização do Slack. Verifique a configuração do app de inbox do Slack."
       }
     },
     "DETAILS": {
@@ -1510,7 +1522,51 @@
       "API": "Canal da API",
       "INSTAGRAM": "Instagram",
       "TIKTOK": "TikTok",
-      "VOICE": "Voz"
+      "VOICE": "Voz",
+      "SLACK": "Slack"
+    },
+    "WHATSMEOW": {
+      "CREATE_AND_PAIR": "Criar caixa e parear",
+      "CONNECTION_TITLE": "Conexão do WhatsApp",
+      "CONNECTION_HELP": "Pareie esta caixa com um celular em WhatsApp > Aparelhos conectados.",
+      "MODE_QR": "QR code",
+      "MODE_CODE": "Código de pareamento",
+      "QR_INSTRUCTIONS": "No celular, abra WhatsApp > Configurações > Aparelhos conectados > Conectar um aparelho e leia este código.",
+      "QR_ALT": "QR code de pareamento do WhatsApp",
+      "GENERATE_QR": "Gerar novo QR code",
+      "CODE_INSTRUCTIONS": "Informe o número a parear e digite o código em WhatsApp > Aparelhos conectados > Conectar com número de telefone.",
+      "PHONE_LABEL": "Número de telefone",
+      "GENERATE_CODE": "Obter código de pareamento",
+      "RECONNECT": "Reconectar",
+      "LOGOUT": "Desconectar aparelho",
+      "ERROR": "Não foi possível acessar a ponte do WhatsApp. Tente novamente.",
+      "GROUPS_ENABLED": "Receber mensagens de grupos",
+      "GROUPS_ENABLED_HELP": "Cada grupo do WhatsApp vira um contato; o remetente aparece em cada mensagem.",
+      "IMPORT_HISTORY": "Importar histórico de conversas",
+      "IMPORT_HISTORY_HELP": "Importa as conversas recentes do celular após o pareamento.",
+      "NATIVE_BUTTONS": "Enviar botões nativos",
+      "NATIVE_BUTTONS_HELP": "Tenta botões/listas do WhatsApp e, se falhar, envia opções numeradas. Desative para sempre enviar texto numerado.",
+      "STATUS": {
+        "connected": "Conectado",
+        "disconnected": "Desconectado",
+        "qr_pending": "Aguardando pareamento",
+        "logged_out": "Não pareado",
+        "unavailable": "Ponte indisponível",
+        "unknown": "Verificando…"
+      }
+    },
+    "SLACK_CHANNEL": {
+      "ACCEPT_DMS": "Aceitar mensagens diretas",
+      "ACCEPT_DMS_HELP": "Mensagens diretas para o app criam conversas.",
+      "MENTION_ONLY": "Abrir conversas só com menção",
+      "MENTION_ONLY_HELP": "Nos canais monitorados, só mensagens que mencionam o app abrem conversa nova; respostas em threads existentes são sempre capturadas.",
+      "MONITORED_CHANNELS": "Canais monitorados",
+      "MONITORED_CHANNELS_HELP": "Cada nova thread nesses canais vira uma conversa. Canais privados exigem convidar o app com /invite.",
+      "SEARCH_PLACEHOLDER": "Buscar canais",
+      "LOADING": "Carregando canais…",
+      "LOAD_ERROR": "Não foi possível carregar os canais do Slack",
+      "PRIVATE_HINT": "privado",
+      "SAVE": "Salvar"
     }
   }
 }

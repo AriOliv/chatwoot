@@ -16,6 +16,8 @@ import TextArea from 'next/textarea/TextArea.vue';
 import { sanitizeAllowedDomains } from 'dashboard/helper/URLHelper';
 import WhatsappBusinessManagementToken from './WhatsappBusinessManagementToken.vue';
 import HmacSecretKey from './components/HmacSecretKey.vue';
+import WhatsmeowSettings from '../channels/whatsmeow/WhatsmeowSettings.vue';
+import SlackChannelSettings from '../channels/slack/SlackChannelSettings.vue';
 
 export default {
   components: {
@@ -28,6 +30,8 @@ export default {
     TextArea,
     WhatsappBusinessManagementToken,
     HmacSecretKey,
+    WhatsmeowSettings,
+    SlackChannelSettings,
   },
   mixins: [inboxMixin],
   props: {
@@ -383,6 +387,8 @@ export default {
     <ImapSettings :inbox="inbox" />
     <SmtpSettings :inbox="inbox" />
   </div>
+  <WhatsmeowSettings v-else-if="isAWhatsmeowChannel" :inbox="inbox" />
+  <SlackChannelSettings v-else-if="isASlackChannel" :inbox="inbox" />
   <div v-else-if="isAWhatsAppChannel && !isATwilioChannel">
     <div v-if="inbox.provider_config">
       <!-- Embedded Signup Section -->

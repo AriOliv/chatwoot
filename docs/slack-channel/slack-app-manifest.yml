@@ -1,0 +1,54 @@
+# Slack app manifest for Chatwoot Slack inboxes (separate from the Slack integration app).
+# Replace https://chatwoot.example.com with your FRONTEND_URL, create the app at
+# https://api.slack.com/apps?new_app=1 ("From an app manifest"), then copy the
+# Client ID, Client Secret and Signing Secret into Super Admin > Settings > Slack Inbox.
+display_information:
+  name: Chatwoot Inbox
+  description: Talk to our team from Slack
+features:
+  bot_user:
+    display_name: Chatwoot Inbox
+    always_online: true
+  app_home:
+    messages_tab_enabled: true
+    messages_tab_read_only_enabled: false
+oauth_config:
+  redirect_urls:
+    - https://chatwoot.example.com/slack_channel/callback
+  scopes:
+    bot:
+      - app_mentions:read
+      - channels:history
+      - channels:join
+      - channels:read
+      - chat:write
+      - chat:write.customize
+      - files:read
+      - files:write
+      - groups:history
+      - groups:read
+      - im:history
+      - im:read
+      - im:write
+      - mpim:history
+      - mpim:read
+      - reactions:read
+      - reactions:write
+      - team:read
+      - users:read
+      - users:read.email
+settings:
+  event_subscriptions:
+    request_url: https://chatwoot.example.com/webhooks/slack_channel/events
+    bot_events:
+      - app_mention
+      - message.channels
+      - message.groups
+      - message.im
+      - message.mpim
+      - reaction_added
+  interactivity:
+    is_enabled: true
+    request_url: https://chatwoot.example.com/webhooks/slack_channel/interactivity
+  org_deploy_enabled: false
+  socket_mode_enabled: false

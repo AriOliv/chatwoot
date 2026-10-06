@@ -347,6 +347,16 @@ Rails.application.routes.draw do
             resource :csat_template, only: [:show, :create], controller: 'inbox_csat_templates' do
               post :analyze, on: :collection
             end
+            resource :slack_channel, only: [], controller: 'inboxes/slack_channel' do
+              get :channels
+            end
+            resource :whatsmeow, only: [], controller: 'inboxes/whatsmeow' do
+              get :status
+              get :qr
+              post :pair_phone
+              post :reconnect
+              delete :logout
+            end
           end
 
           resources :inbox_members, only: [:create, :show], param: :inbox_id do
@@ -404,6 +414,9 @@ Rails.application.routes.draw do
             resource :authorization, only: [:create]
           end
 
+          namespace :slack_channel do
+            resource :authorization, only: [:create]
+          end
           namespace :tiktok do
             resource :authorization, only: [:create]
           end
@@ -711,6 +724,8 @@ Rails.application.routes.draw do
   get 'webhooks/instagram', to: 'webhooks/instagram#verify'
   post 'webhooks/instagram', to: 'webhooks/instagram#events'
   post 'webhooks/tiktok', to: 'webhooks/tiktok#events'
+  post 'webhooks/slack_channel/events', to: 'webhooks/slack_channel#events'
+  post 'webhooks/slack_channel/interactivity', to: 'webhooks/slack_channel#interactivity'
   post 'webhooks/shopify', to: 'webhooks/shopify#events'
 
   namespace :twitter do
@@ -741,6 +756,7 @@ Rails.application.routes.draw do
   get 'google/callback', to: 'google/callbacks#show'
   get 'instagram/callback', to: 'instagram/callbacks#show'
   get 'tiktok/callback', to: 'tiktok/callbacks#show'
+  get 'slack_channel/callback', to: 'slack_channel/callbacks#show'
   get 'notion/callback', to: 'notion/callbacks#show'
   # ----------------------------------------------------------------------
   # Routes for external service verifications
