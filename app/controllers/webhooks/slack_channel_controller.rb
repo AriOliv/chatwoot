@@ -22,7 +22,7 @@ class Webhooks::SlackChannelController < ActionController::API
   private
 
   def verify_signature!
-    secret = GlobalConfigService.load('SLACK_CHANNEL_SIGNING_SECRET', nil)
+    secret = SlackChannel::IntegrationHelper.config('SLACK_CHANNEL_SIGNING_SECRET')
     head :unauthorized unless secret.present? && valid_slack_signature?(secret)
   end
 end

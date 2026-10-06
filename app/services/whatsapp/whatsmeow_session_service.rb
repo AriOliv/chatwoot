@@ -58,7 +58,13 @@ class Whatsapp::WhatsmeowSessionService
   end
 
   def headers
-    { 'Authorization' => "Bearer #{GlobalConfigService.load('WHATSMEOW_BRIDGE_TOKEN', nil)}", 'Content-Type' => 'application/json' }
+    { 'Authorization' => "Bearer #{self.class.config('WHATSMEOW_BRIDGE_TOKEN')}", 'Content-Type' => 'application/json' }
+  end
+
+  # Installation config reconciliation seeds blank rows for these keys, which makes
+  # GlobalConfigService skip its ENV fallback, so read ENV directly as a last resort.
+  def self.config(key)
+    GlobalConfigService.load(key, nil).presence || ENV.fetch(key, nil).presence
   end
 
   private
@@ -81,11 +87,11 @@ class Whatsapp::WhatsmeowSessionService
   end
 
   def base_url
-    GlobalConfigService.load('WHATSMEOW_BRIDGE_URL', nil).to_s.chomp('/')
+    self.class.config('WHATSMEOW_BRIDGE_URL').to_s.chomp('/')
   end
 
   def webhook_url
-    base = GlobalConfigService.load('WHATSMEOW_WEBHOOK_BASE_URL', nil).presence || ENV.fetch('FRONTEND_URL', '')
+    base = self.class.config('WHATSMEOW_WEBHOOK_BASE_URL') || ENV.fetch('FRONTEND_URL', '')
     "#{base.chomp('/')}/webhooks/whatsapp/#{@channel.phone_number}"
   end
 end

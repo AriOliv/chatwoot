@@ -25,10 +25,15 @@ module SlackChannel::IntegrationHelper
   end
 
   def client_id
-    GlobalConfigService.load('SLACK_CHANNEL_CLIENT_ID', nil)
+    SlackChannel::IntegrationHelper.config('SLACK_CHANNEL_CLIENT_ID')
   end
 
   def client_secret
-    GlobalConfigService.load('SLACK_CHANNEL_CLIENT_SECRET', nil)
+    SlackChannel::IntegrationHelper.config('SLACK_CHANNEL_CLIENT_SECRET')
+  end
+
+  # Blank seeded config rows make GlobalConfigService skip its ENV fallback.
+  def self.config(key)
+    GlobalConfigService.load(key, nil).presence || ENV.fetch(key, nil).presence
   end
 end
