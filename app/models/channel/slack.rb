@@ -4,7 +4,7 @@
 #
 #  id          :bigint           not null, primary key
 #  bot_token   :string           not null
-#  scope       :string
+#  scope       :text
 #  settings    :jsonb            not null
 #  team_name   :string
 #  created_at  :datetime         not null
