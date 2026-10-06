@@ -54,16 +54,14 @@ func NewSessionManager(store *Store, cfg Config, log waLog.Logger) *SessionManag
 		sessions: map[string]*Session{}}
 }
 
-// RestoreAll reconnects every session that has a paired device.
+// RestoreAll loads every registered session; load only connects the paired ones,
+// so unpaired sessions stay available for QR pairing after a restart.
 func (m *SessionManager) RestoreAll(ctx context.Context) error {
 	recs, err := m.store.ListSessions(ctx)
 	if err != nil {
 		return err
 	}
 	for _, rec := range recs {
-		if rec.DeviceJID == "" {
-			continue
-		}
 		if _, err := m.load(ctx, rec); err != nil {
 			m.log.Errorf("restore session %s: %v", rec.ID, err)
 		}
