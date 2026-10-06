@@ -86,6 +86,12 @@ FactoryBot.define do
     end
     message_templates_last_updated { Time.now.utc }
 
+    trait :whatsmeow do
+      provider { 'whatsmeow' }
+      provider_config { { 'webhook_secret' => 'whatsmeow_secret' } }
+      message_templates { [] }
+    end
+
     transient do
       sync_templates { true }
       validate_provider_config { true }
@@ -95,6 +101,7 @@ FactoryBot.define do
       # since factory already has the required message templates, we just need to bypass it getting updated
       channel_whatsapp.define_singleton_method(:sync_templates) { nil } unless options.sync_templates
       channel_whatsapp.define_singleton_method(:validate_provider_config) { nil } unless options.validate_provider_config
+      channel_whatsapp.define_singleton_method(:register_whatsmeow_session) { nil } if channel_whatsapp.whatsmeow?
       if channel_whatsapp.provider == 'whatsapp_cloud'
         # Add 'source' => 'embedded_signup' to skip after_commit :setup_webhooks callback in tests
         # The callback is for manual setup flow; embedded signup handles webhook setup explicitly

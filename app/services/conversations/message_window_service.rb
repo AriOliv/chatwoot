@@ -25,7 +25,8 @@ class Conversations::MessageWindowService
     when 'Channel::Tiktok'
       tiktok_messaging_window
     when 'Channel::Whatsapp'
-      MESSAGING_WINDOW_24_HOURS
+      # WhatsApp Web sessions (whatsmeow) have no business messaging window.
+      @conversation.inbox.channel.whatsmeow? ? nil : MESSAGING_WINDOW_24_HOURS
     when 'Channel::TwilioSms'
       twilio_messaging_window
     end

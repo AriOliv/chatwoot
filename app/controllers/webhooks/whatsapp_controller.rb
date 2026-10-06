@@ -1,7 +1,8 @@
 class Webhooks::WhatsappController < ActionController::API
   include MetaTokenVerifyConcern
 
-  before_action :verify_meta_signature!, only: :process_payload
+  before_action :verify_whatsmeow_signature!, only: :process_payload, if: -> { whatsapp_channel&.whatsmeow? }
+  before_action :verify_meta_signature!, only: :process_payload, unless: -> { whatsapp_channel&.whatsmeow? }
 
   def process_payload
     if inactive_whatsapp_number?
@@ -17,6 +18,13 @@ class Webhooks::WhatsappController < ActionController::API
   end
 
   private
+
+  def verify_whatsmeow_signature!
+    secret = whatsapp_channel.provider_config['webhook_secret'].to_s
+    expected = "sha256=#{OpenSSL::HMAC.hexdigest('SHA256', secret, request.raw_post)}"
+    provided = request.headers['X-Whatsmeow-Signature'].to_s
+    head :unauthorized unless secret.present? && ActiveSupport::SecurityUtils.secure_compare(expected, provided)
+  end
 
   def tracking_events_only?
     return false unless params[:object] == 'whatsapp_business_account'

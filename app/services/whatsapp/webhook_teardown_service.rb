@@ -4,6 +4,7 @@ class Whatsapp::WebhookTeardownService
   end
 
   def perform
+    return @channel.whatsmeow_session.logout if @channel.whatsmeow?
     return unless should_teardown_webhook?
 
     api_client = Whatsapp::FacebookApiClient.new(provider_config['api_key'])

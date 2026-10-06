@@ -31,7 +31,7 @@ class Channel::Whatsapp < ApplicationRecord
   encrypts :business_management_token if Chatwoot.encryption_configured?
 
   # default at the moment is 360dialog lets change later.
-  PROVIDERS = %w[default whatsapp_cloud].freeze
+  PROVIDERS = %w[default whatsapp_cloud whatsmeow].freeze
   before_validation :ensure_webhook_verify_token
 
   validates :provider, inclusion: { in: PROVIDERS }
@@ -42,6 +42,7 @@ class Channel::Whatsapp < ApplicationRecord
   after_update_commit :log_credentials_transfer, if: :saved_change_to_provider_config?
   before_destroy :teardown_webhooks
   after_commit :setup_webhooks, on: :create, if: :should_auto_setup_webhooks?
+  after_commit :register_whatsmeow_session, on: [:create, :update], if: :whatsmeow?
 
   def name
     'Whatsapp'
@@ -68,12 +69,23 @@ class Channel::Whatsapp < ApplicationRecord
     provider == 'whatsapp_cloud'
   end
 
+  def whatsmeow?
+    provider == 'whatsmeow'
+  end
+
   def provider_service
-    if provider == 'whatsapp_cloud'
+    case provider
+    when 'whatsapp_cloud'
       Whatsapp::Providers::WhatsappCloudService.new(whatsapp_channel: self)
+    when 'whatsmeow'
+      Whatsapp::Providers::WhatsmeowService.new(whatsapp_channel: self)
     else
       Whatsapp::Providers::Whatsapp360DialogService.new(whatsapp_channel: self)
     end
+  end
+
+  def whatsmeow_session
+    Whatsapp::WhatsmeowSessionService.new(self)
   end
 
   def template_access_token
@@ -153,6 +165,17 @@ class Channel::Whatsapp < ApplicationRecord
 
   def ensure_webhook_verify_token
     provider_config['webhook_verify_token'] ||= SecureRandom.hex(16) if provider == 'whatsapp_cloud'
+    provider_config['webhook_secret'] ||= SecureRandom.hex(32) if whatsmeow?
+  end
+
+  # The bridge keys sessions by phone number; registration is idempotent so it also
+  # refreshes the webhook URL/secret and history preference on update.
+  def register_whatsmeow_session
+    return unless saved_change_to_id? || saved_change_to_provider_config?
+
+    whatsmeow_session.register
+  rescue StandardError => e
+    Rails.logger.error "[WHATSMEOW] Session registration failed for channel #{id}: #{e.message}"
   end
 
   def validate_provider_config
