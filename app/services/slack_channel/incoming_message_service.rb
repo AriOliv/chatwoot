@@ -31,12 +31,15 @@ class SlackChannel::IncomingMessageService
   end
 
   def ignorable_message?
-    return true if event[:user].blank? || event[:user] == channel.bot_user_id || event[:bot_id].present?
-    return true if IGNORED_SUBTYPES.include?(event[:subtype])
+    return true if bot_or_system_message?
     return true if event[:type] == 'app_mention' && dm? # DMs also deliver a message event
     return !channel.accept_dms? if dm?
 
     channel.monitored_channel_ids.exclude?(event[:channel])
+  end
+
+  def bot_or_system_message?
+    event[:user].blank? || event[:user] == channel.bot_user_id || event[:bot_id].present? || IGNORED_SUBTYPES.include?(event[:subtype])
   end
 
   def dm?
@@ -147,11 +150,15 @@ class SlackChannel::IncomingMessageService
       name: profile[:display_name].presence || user[:real_name].presence || user[:name],
       email: profile[:email].presence,
       avatar_url: profile[:image_192].presence,
-      additional_attributes: { slack_user_id: user[:id], slack_team_id: user[:team_id], title: profile[:title].presence,
-                               external_workspace: user[:team_id].present? && user[:team_id] != channel.team_id }.compact
+      additional_attributes: slack_user_attributes(user, profile)
     }.compact
   rescue ::Slack::Web::Api::Errors::SlackError => e
     Rails.logger.warn("[SLACK_CHANNEL] users_info failed for #{event[:user]}: #{e.message}")
     { name: event[:user] }
+  end
+
+  def slack_user_attributes(user, profile)
+    { slack_user_id: user[:id], slack_team_id: user[:team_id], title: profile[:title].presence,
+      external_workspace: user[:team_id].present? && user[:team_id] != channel.team_id }.compact
   end
 end

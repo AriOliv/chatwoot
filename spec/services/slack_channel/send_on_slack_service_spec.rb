@@ -18,7 +18,7 @@ describe SlackChannel::SendOnSlackService do
     described_class.new(message: message).perform
 
     expect(slack_client).to have_received(:chat_postMessage)
-      .with(hash_including(channel: 'CSUPPORT', thread_ts: '2.1', text: '*hi*', username: 'Agent Smith'))
+      .with(hash_including(channel: 'CSUPPORT', thread_ts: '2.1', text: '*hi*', username: agent.available_name))
     expect(message.reload.source_id).to eq('2.5')
     expect(message.status).to eq('delivered')
   end
@@ -37,10 +37,12 @@ describe SlackChannel::SendOnSlackService do
 
   it 'marks the message failed and prompts reauthorization on auth errors' do
     message = create(:message, conversation: conversation, message_type: :outgoing, content: 'hi')
-    allow(slack_client).to receive(:chat_postMessage).and_raise(Slack::Web::Api::Errors::SlackError.new('invalid_auth'))
+    error_response = Faraday::Response.new(status: 200, body: Slack::Messages::Message.new('ok' => false, 'error' => 'invalid_auth'))
+    allow(slack_client).to receive(:chat_postMessage).and_raise(Slack::Web::Api::Errors::SlackError.new('invalid_auth', error_response))
 
     described_class.new(message: message).perform
 
     expect(message.reload.status).to eq('failed')
+    expect(channel.reload.authorization_error_count).to eq(1)
   end
 end

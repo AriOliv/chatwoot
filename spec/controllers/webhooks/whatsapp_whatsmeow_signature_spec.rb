@@ -1,8 +1,9 @@
 require 'rails_helper'
 
 RSpec.describe 'Whatsmeow webhook signature', type: :request do
-  let!(:channel) { create(:channel_whatsapp, :whatsmeow, phone_number: '+5511900000001', sync_templates: false, validate_provider_config: false) }
   let(:body) { { statuses: [{ id: 'X', status: 'read' }] }.to_json }
+
+  before { create(:channel_whatsapp, :whatsmeow, phone_number: '+5511900000001', sync_templates: false, validate_provider_config: false) }
 
   def sign(payload)
     "sha256=#{OpenSSL::HMAC.hexdigest('SHA256', 'whatsmeow_secret', payload)}"

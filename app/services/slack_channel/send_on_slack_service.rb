@@ -14,7 +14,7 @@ class SlackChannel::SendOnSlackService < Base::SendOnChannelService
     message.update!(source_id: response_ts(response))
     Messages::StatusUpdateService.new(message, 'delivered').perform
   rescue ::Slack::Web::Api::Errors::SlackError => e
-    channel.authorization_error! if AUTH_ERRORS.include?(e.error)
+    channel.authorization_error! if AUTH_ERRORS.include?(e.message)
     Messages::StatusUpdateService.new(message, 'failed', e.message).perform
   end
 
@@ -27,7 +27,8 @@ class SlackChannel::SendOnSlackService < Base::SendOnChannelService
 
   def upload_files
     files = message.attachments.map do |attachment|
-      { filename: attachment.file.filename.to_s, content: attachment.file.download, title: attachment.file.filename.to_s }
+      content = attachment.file.blob.open(&:read)
+      { filename: attachment.file.filename.to_s, content: content, title: attachment.file.filename.to_s }
     end
     channel.client.files_upload_v2(files: files, channel_id: slack_channel_id, thread_ts: thread_ts,
                                    initial_comment: message.outgoing_content.presence)
@@ -43,7 +44,8 @@ class SlackChannel::SendOnSlackService < Base::SendOnChannelService
     return unless message.content_type == 'input_select'
 
     buttons = message.content_attributes['items'].first(25).map do |item|
-      { type: 'button', text: { type: 'plain_text', text: item['title'].to_s.first(75) }, value: item['value'].to_s, action_id: "cw_select_#{message.id}_#{item['value']}" }
+      { type: 'button', text: { type: 'plain_text', text: item['title'].to_s.first(75) }, value: item['value'].to_s,
+        action_id: "cw_select_#{message.id}_#{item['value']}" }
     end
     [{ type: 'section', text: { type: 'mrkdwn', text: message.outgoing_content.presence || ' ' } },
      { type: 'actions', block_id: "cw_message_#{message.id}", elements: buttons }]

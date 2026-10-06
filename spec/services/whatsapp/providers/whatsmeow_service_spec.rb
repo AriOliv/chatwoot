@@ -3,7 +3,9 @@ require 'rails_helper'
 describe Whatsapp::Providers::WhatsmeowService do
   subject(:service) { described_class.new(whatsapp_channel: whatsapp_channel) }
 
-  let!(:whatsapp_channel) { create(:channel_whatsapp, :whatsmeow, phone_number: '+5511900000000', sync_templates: false, validate_provider_config: false) }
+  let!(:whatsapp_channel) do
+    create(:channel_whatsapp, :whatsmeow, phone_number: '+5511900000000', sync_templates: false, validate_provider_config: false)
+  end
   let(:bridge_url) { 'http://bridge.test' }
   let(:messages_url) { "#{bridge_url}/sessions/5511900000000/messages" }
   let(:json_headers) { { 'Content-Type' => 'application/json' } }
@@ -26,8 +28,9 @@ describe Whatsapp::Providers::WhatsmeowService do
     end
 
     it 'quotes the original message when replying' do
+      original = create(:message, message_type: :incoming, content: 'question', inbox: whatsapp_channel.inbox, source_id: 'ORIGINAL_ID')
       message = create(:message, message_type: :outgoing, content: 'reply', inbox: whatsapp_channel.inbox,
-                                 content_attributes: { in_reply_to_external_id: 'ORIGINAL_ID' })
+                                 conversation: original.conversation, content_attributes: { in_reply_to: original.id })
       stub_request(:post, messages_url)
         .with(body: hash_including('reply_to_id' => 'ORIGINAL_ID'))
         .to_return(status: 200, body: { id: 'WA_ID' }.to_json, headers: json_headers)

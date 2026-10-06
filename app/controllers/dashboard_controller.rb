@@ -80,8 +80,6 @@ class DashboardController < ActionController::Base
       FB_APP_ID: GlobalConfigService.load('FB_APP_ID', ''),
       INSTAGRAM_APP_ID: GlobalConfigService.load('INSTAGRAM_APP_ID', ''),
       TIKTOK_APP_ID: GlobalConfigService.load('TIKTOK_APP_ID', ''),
-      WHATSMEOW_ENABLED: Whatsapp::WhatsmeowSessionService.config('WHATSMEOW_BRIDGE_URL').present?,
-      SLACK_CHANNEL_CLIENT_ID: SlackChannel::IntegrationHelper.config('SLACK_CHANNEL_CLIENT_ID').to_s,
       FACEBOOK_API_VERSION: GlobalConfigService.load('FACEBOOK_API_VERSION', 'v18.0'),
       WHATSAPP_APP_ID: GlobalConfigService.load('WHATSAPP_APP_ID', ''),
       WHATSAPP_CONFIGURATION_ID: GlobalConfigService.load('WHATSAPP_CONFIGURATION_ID', ''),
@@ -92,6 +90,13 @@ class DashboardController < ActionController::Base
       ALLOWED_LOGIN_METHODS: allowed_login_methods,
       ACTIVE_PLATFORM_BANNERS: active_platform_banners,
       ACTIVE_FEATURE_ANNOUNCEMENTS: active_feature_announcements
+    }.merge(fork_channel_config)
+  end
+
+  def fork_channel_config
+    {
+      WHATSMEOW_ENABLED: Whatsapp::WhatsmeowSessionService.config('WHATSMEOW_BRIDGE_URL').present?,
+      SLACK_CHANNEL_CLIENT_ID: SlackChannel::IntegrationHelper.config('SLACK_CHANNEL_CLIENT_ID').to_s
     }
   end
 

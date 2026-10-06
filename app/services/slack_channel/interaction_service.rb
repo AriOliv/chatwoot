@@ -4,22 +4,32 @@ class SlackChannel::InteractionService
   pattr_initialize [:payload!]
 
   def perform
-    action = payload[:actions]&.first
-    message_id = action&.dig(:block_id).to_s.delete_prefix('cw_message_')
-    return if channel.blank? || message_id.blank?
-
-    original = channel.inbox.messages.find_by(id: message_id)
-    return if original.blank?
-
-    item = Array(original.content_attributes['items']).find { |i| i['value'].to_s == action[:value].to_s }
+    item = selected_item
     return if item.blank?
 
     selection = { 'title' => item['title'], 'value' => item['value'] }
-    original.update!(content_attributes: original.content_attributes.merge('submitted_values' => [selection]))
+    original_message.update!(content_attributes: original_message.content_attributes.merge('submitted_values' => [selection]))
     SlackChannel::IncomingMessageService.new(channel: channel, event: synthetic_event(item)).perform
   end
 
   private
+
+  def action
+    @action ||= payload[:actions]&.first || {}
+  end
+
+  def original_message
+    return @original_message if defined?(@original_message)
+
+    message_id = action[:block_id].to_s.delete_prefix('cw_message_')
+    @original_message = (channel.inbox.messages.find_by(id: message_id) if channel && message_id.present?)
+  end
+
+  def selected_item
+    return if original_message.blank?
+
+    Array(original_message.content_attributes['items']).find { |i| i['value'].to_s == action[:value].to_s }
+  end
 
   def channel
     @channel ||= Channel::Slack.find_by(team_id: payload.dig(:team, :id))

@@ -21,19 +21,22 @@ class SlackChannel::CallbacksController < ApplicationController
   def find_or_create_inbox
     channel = Channel::Slack.find_by(team_id: oauth[:team][:id], account: @account)
     exists = channel.present?
-    attributes = { bot_user_id: oauth[:bot_user_id], bot_token: oauth[:access_token], scope: oauth[:scope],
-                   app_id: oauth[:app_id], team_name: oauth[:team][:name] }
-
-    if channel
-      channel.update!(attributes)
-    else
-      ActiveRecord::Base.transaction do
-        channel = @account.slack_channels.create!(attributes.merge(team_id: oauth[:team][:id]))
-        @account.inboxes.create!(channel: channel, name: "Slack - #{oauth[:team][:name]}")
-      end
-    end
+    exists ? channel.update!(channel_attributes) : channel = create_channel_with_inbox
     channel.reauthorized!
     [channel.inbox, exists]
+  end
+
+  def create_channel_with_inbox
+    ActiveRecord::Base.transaction do
+      channel = @account.slack_channels.create!(channel_attributes.merge(team_id: oauth[:team][:id]))
+      @account.inboxes.create!(channel: channel, name: "Slack - #{oauth[:team][:name]}")
+      channel
+    end
+  end
+
+  def channel_attributes
+    { bot_user_id: oauth[:bot_user_id], bot_token: oauth[:access_token], scope: oauth[:scope],
+      app_id: oauth[:app_id], team_name: oauth[:team][:name] }
   end
 
   def oauth

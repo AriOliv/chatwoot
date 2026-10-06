@@ -83,15 +83,15 @@ class Whatsapp::IncomingMessageWhatsmeowService < Whatsapp::IncomingMessageBaseS
   def fallback_selection
     return @fallback_selection if defined?(@fallback_selection)
 
-    @fallback_selection = nil
-    return if outgoing_echo
-
-    choice = @message.content.to_s.strip
-    return unless choice.match?(/\A\d{1,2}\z/)
-
-    options = last_outgoing_message&.content_attributes&.dig('whatsmeow_fallback_options')
-    option = options&.at(choice.to_i - 1)
+    option = fallback_option
     @fallback_selection = option && { 'title' => option['title'], 'value' => option['id'] }
+  end
+
+  def fallback_option
+    choice = @message.content.to_s.strip
+    return if outgoing_echo || !choice.match?(/\A\d{1,2}\z/)
+
+    last_outgoing_message&.content_attributes&.dig('whatsmeow_fallback_options')&.at(choice.to_i - 1)
   end
 
   def last_outgoing_message

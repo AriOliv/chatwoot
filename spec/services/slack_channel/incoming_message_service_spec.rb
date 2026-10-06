@@ -7,6 +7,7 @@ describe SlackChannel::IncomingMessageService do
 
   before do
     allow(Slack::Web::Client).to receive(:new).and_return(slack_client)
+    allow(slack_client).to receive(:conversations_join)
     allow(slack_client).to receive(:users_info).and_return(
       { user: { id: 'U1', team_id: channel.team_id, real_name: 'Joe', profile: { display_name: 'joe', email: 'joe@example.com' } } }
                                                              .with_indifferent_access

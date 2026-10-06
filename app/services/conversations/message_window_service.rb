@@ -25,8 +25,7 @@ class Conversations::MessageWindowService
     when 'Channel::Tiktok'
       tiktok_messaging_window
     when 'Channel::Whatsapp'
-      # WhatsApp Web sessions (whatsmeow) have no business messaging window.
-      @conversation.inbox.channel.whatsmeow? ? nil : MESSAGING_WINDOW_24_HOURS
+      whatsapp_messaging_window
     when 'Channel::TwilioSms'
       twilio_messaging_window
     end
@@ -42,6 +41,11 @@ class Conversations::MessageWindowService
     return if @conversation.inbox.channel.additional_attributes['agent_reply_time_window'].blank?
 
     @conversation.inbox.channel.additional_attributes['agent_reply_time_window'].to_i.hours
+  end
+
+  # WhatsApp Web sessions (whatsmeow) have no business messaging window.
+  def whatsapp_messaging_window
+    @conversation.inbox.channel.whatsmeow? ? nil : MESSAGING_WINDOW_24_HOURS
   end
 
   # Check medium of the inbox to determine the messaging window
