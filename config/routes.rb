@@ -351,7 +351,7 @@ Rails.application.routes.draw do
               get :channels
             end
             resource :whatsmeow, only: [], controller: 'inboxes/whatsmeow' do
-              get :status
+              get :status, action: :connection_status
               get :qr
               post :pair_phone
               post :reconnect

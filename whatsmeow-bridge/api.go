@@ -21,6 +21,7 @@ func NewAPI(mgr *SessionManager, token string) *API { return &API{mgr: mgr, toke
 func (a *API) Router() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.Logger)
 	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) { writeJSON(w, http.StatusOK, map[string]string{"status": "ok"}) })
 
 	r.Group(func(r chi.Router) {
