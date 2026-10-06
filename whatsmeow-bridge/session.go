@@ -351,16 +351,16 @@ func (s *Session) handleEvent(rawEvt any) {
 }
 
 func (s *Session) handleMessage(evt *events.Message, history bool) {
-	ctx := context.Background()
-	if err := s.store.SaveMessage(ctx, StoredMessage{
+	p := BuildMessagePayload(evt, s.resolveJID, s.lookupGroupName, history)
+	if p == nil {
+		return
+	}
+	// Only messages forwarded to Chatwoot can be quoted or have media fetched later.
+	if err := s.store.SaveMessage(context.Background(), StoredMessage{
 		SessionID: s.id, ID: evt.Info.ID, Chat: evt.Info.Chat.String(), Sender: evt.Info.Sender.ToNonAD().String(),
 		FromMe: evt.Info.IsFromMe, Message: evt.Message, CreatedAt: evt.Info.Timestamp,
 	}); err != nil {
 		s.log.Warnf("cache message %s: %v", evt.Info.ID, err)
-	}
-	p := BuildMessagePayload(evt, s.resolveJID, s.lookupGroupName, history)
-	if p == nil {
-		return
 	}
 	if history {
 		s.notify(p)
