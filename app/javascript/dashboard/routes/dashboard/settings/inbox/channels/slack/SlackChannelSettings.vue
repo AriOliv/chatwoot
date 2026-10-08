@@ -17,6 +17,7 @@ const { t } = useI18n();
 const settings = props.inbox.settings || {};
 const acceptDms = ref(settings.accept_dms !== false);
 const mentionOnly = ref(settings.mention_only === true);
+const includeAppMessages = ref(settings.include_app_messages === true);
 const monitoredIds = ref([...(settings.monitored_channel_ids || [])]);
 const channels = ref([]);
 const search = ref('');
@@ -58,6 +59,7 @@ const save = async () => {
         settings: {
           accept_dms: acceptDms.value,
           mention_only: mentionOnly.value,
+          include_app_messages: includeAppMessages.value,
           monitored_channel_ids: monitoredIds.value,
         },
       },
@@ -84,6 +86,11 @@ onMounted(loadChannels);
       v-model="mentionOnly"
       :header="$t('INBOX_MGMT.SLACK_CHANNEL.MENTION_ONLY')"
       :description="$t('INBOX_MGMT.SLACK_CHANNEL.MENTION_ONLY_HELP')"
+    />
+    <SettingsToggleSection
+      v-model="includeAppMessages"
+      :header="$t('INBOX_MGMT.SLACK_CHANNEL.INCLUDE_APP_MESSAGES')"
+      :description="$t('INBOX_MGMT.SLACK_CHANNEL.INCLUDE_APP_MESSAGES_HELP')"
     />
     <SettingsFieldSection
       :label="$t('INBOX_MGMT.SLACK_CHANNEL.MONITORED_CHANNELS')"

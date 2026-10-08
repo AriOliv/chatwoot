@@ -1,11 +1,13 @@
 # Turns Slack Events API payloads into Chatwoot messages for a Slack inbox.
-# - Each Slack user is a contact (source id "<team_id>:<user_id>").
+# - Each Slack user is a contact (source id "<team_id>:<user_id>"); when the inbox includes app messages,
+#   each app persona (bot_id + username) is a contact too (source id "<team_id>:<bot_id>:<username>").
 # - A DM (im/mpim) is one conversation; in monitored channels each thread is one conversation.
 # - The thread is tracked in conversation.additional_attributes (identifier is used by the Slack integration).
+# - history: true marks messages imported by SlackChannel::HistoryImportService; they keep the Slack timestamp.
 class SlackChannel::IncomingMessageService
-  IGNORED_SUBTYPES = %w[bot_message channel_join channel_leave channel_topic channel_purpose channel_name thread_broadcast].freeze
+  SYSTEM_SUBTYPES = %w[channel_join channel_leave channel_topic channel_purpose channel_name thread_broadcast].freeze
 
-  pattr_initialize [:channel!, :event!]
+  pattr_initialize [:channel!, :event!, { history: false }]
 
   def perform
     case event[:type]
@@ -31,15 +33,26 @@ class SlackChannel::IncomingMessageService
   end
 
   def ignorable_message?
-    return true if bot_or_system_message?
+    return true if unsupported_sender?
     return true if event[:type] == 'app_mention' && dm? # DMs also deliver a message event
     return !channel.accept_dms? if dm?
 
     channel.monitored_channel_ids.exclude?(event[:channel])
   end
 
-  def bot_or_system_message?
-    event[:user].blank? || event[:user] == channel.bot_user_id || event[:bot_id].present? || IGNORED_SUBTYPES.include?(event[:subtype])
+  def unsupported_sender?
+    return true if SYSTEM_SUBTYPES.include?(event[:subtype]) || own_message?
+
+    app_message? ? !channel.include_app_messages? : event[:user].blank?
+  end
+
+  def own_message?
+    event[:user] == channel.bot_user_id || (channel.app_id.present? && event[:app_id] == channel.app_id)
+  end
+
+  # Posts made through another app's token: bot_message subtype, or an app's bot user (bot_id set).
+  def app_message?
+    event[:subtype] == 'bot_message' || event[:bot_id].present?
   end
 
   def dm?
@@ -71,18 +84,29 @@ class SlackChannel::IncomingMessageService
   def create_conversation
     attributes = { slack_channel_id: event[:channel], slack_channel_type: dm? ? 'dm' : 'channel' }
     attributes[:slack_thread_ts] = thread_ts unless dm?
-    ::Conversation.create!(account_id: account.id, inbox_id: inbox.id, contact_id: contact.id,
-                           contact_inbox_id: contact_inbox.id, additional_attributes: attributes)
+    conversation = ::Conversation.new(account_id: account.id, inbox_id: inbox.id, contact_id: contact.id,
+                                      contact_inbox_id: contact_inbox.id, additional_attributes: attributes)
+    conversation.created_at = slack_time if history
+    conversation.save!
+    conversation
+  end
+
+  def slack_time
+    Time.zone.at(event[:ts].to_f)
   end
 
   def create_message(conversation)
     message = conversation.messages.build(
       account_id: account.id, inbox_id: inbox.id, message_type: :incoming, sender: contact,
-      content: format_text(event[:text]), source_id: event[:ts],
-      content_attributes: { slack_ts: event[:ts], slack_thread_ts: event[:thread_ts] }.compact
+      content: format_text(event[:text]), source_id: event[:ts], content_attributes: message_attributes
     )
+    message.created_at = slack_time if history
     attach_files(message)
     message.save!
+  end
+
+  def message_attributes
+    { slack_ts: event[:ts], slack_thread_ts: event[:thread_ts], external_created_at: (event[:ts].to_i if history) }.compact
   end
 
   def update_message
@@ -135,8 +159,26 @@ class SlackChannel::IncomingMessageService
 
   def contact_inbox
     @contact_inbox ||= ::ContactInboxWithContactBuilder.new(
-      source_id: "#{channel.team_id}:#{event[:user]}", inbox: inbox, contact_attributes: contact_attributes
+      source_id: contact_source_id, inbox: inbox, contact_attributes: app_persona? ? app_contact_attributes : contact_attributes
     ).perform
+  end
+
+  # bot_message posts have no user; apps posting with a custom username are one contact per persona.
+  def app_persona?
+    event[:user].blank? && event[:bot_id].present?
+  end
+
+  def contact_source_id
+    return "#{channel.team_id}:#{event[:user]}" unless app_persona?
+
+    persona = event[:username].presence || event.dig(:bot_profile, :name)
+    ["#{channel.team_id}:#{event[:bot_id]}", persona.to_s.parameterize.presence].compact.join(':')
+  end
+
+  def app_contact_attributes
+    name = event[:username].presence || event.dig(:bot_profile, :name).presence || event[:bot_id]
+    avatar = event.dig(:icons, :image_72).presence || event.dig(:icons, :image_48).presence || event.dig(:bot_profile, :icons, :image_72)
+    { name: name, avatar_url: avatar, additional_attributes: { slack_bot_id: event[:bot_id], slack_app: true } }.compact
   end
 
   def contact
